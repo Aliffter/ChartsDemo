@@ -13,6 +13,11 @@ class TestViewController: UIViewController , ChartViewDelegate{
     //柱状图图
     var chartView: BarChartView!
     
+    
+    var chartWidth = 1 / 5 * 0.8
+    
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = UIColor.white
@@ -20,18 +25,15 @@ class TestViewController: UIViewController , ChartViewDelegate{
         //创建柱状图组件对象
         chartView = BarChartView()
         chartView.delegate = self
-        chartView.frame = CGRect(x: 20, y: 80, width: self.view.bounds.width - 40,
+        chartView.frame = CGRect(x: 20, y: 80, width: self.view.bounds.width - 80,
                                  height: 260)
-        //立柱数值文字显示在内部
-        chartView.drawValueAboveBarEnabled = true
-        
+        //基本样式
+        chartView.noDataText = "You need to provide data for the chart." //没有数据时的文字提示
+        chartView.drawValueAboveBarEnabled = true  //数值显示在柱形的上面还是下面
+        chartView.drawBarShadowEnabled = true  //是否绘制柱形的阴影背景
+
         //显示图例
         chartView.legend.enabled = true
-        
-        //设置x轴缩放倍数
-        chartView.zoom(scaleX: 2, scaleY: 1, x: 0, y: 0) //
-        chartView.setScaleEnabled(false)
-        
         //barChartView的交互设置
         chartView.scaleYEnabled = false  //取消Y轴缩放
         chartView.doubleTapToZoomEnabled = false   //取消双击缩放
@@ -43,21 +45,20 @@ class TestViewController: UIViewController , ChartViewDelegate{
         
         
         
-        let years = ["上海分公司", "北京分公司", "河南分公司","","","","","","","",""]
+        let years = ["上海分公司", "北京分公司", "河南分公司"]
         chartView.xAxis.valueFormatter = IndexAxisValueFormatter(values:years)
         
         
         
         addXAxisType()
         addYAxisType()
-        
-        addLimmitLine()
+//        addLimmitLine()
         
         self.view.addSubview(chartView)
         
         //生成10条随机数据
         var dataEntries = [BarChartDataEntry]()
-        for i in 0..<10 {
+        for i in 0..<5 {
             let y = arc4random()%100
             // 生成显示的数据
             //            let entry = BarChartDataEntry(x: Double(i), y: Double(y))
@@ -67,10 +68,14 @@ class TestViewController: UIViewController , ChartViewDelegate{
         }
         
         
+        
         //这20条数据作为柱状图的所有数据
         let chartDataSet = BarChartDataSet(entries: dataEntries, label: "图例1")
         chartDataSet.colors = [.red, .blue, .green] //三种颜色交替使用
         
+        chartView.legend.enabled = true  //不显示图例说明
+        chartView.chartDescription?.text = "123" //不显示，就设为空字符串即可
+
         /**
          *   chartDataSet  style
          */
@@ -86,17 +91,32 @@ class TestViewController: UIViewController , ChartViewDelegate{
         
         //默认情况下柱状图中每根柱子占其所处刻度区域宽度的 85%，我们可以修改它所占的宽度比例。
         //设置柱子宽度为刻度区域的一半
-        chartData.barWidth = 0.5
         
+        /*
+         10  -   1
+         5   -   0.5
+         1   -   0.1
+         
+         */
+        let maxCount = dataEntries.count <= 5 ? dataEntries.count : 5
         
+        chartData.barWidth = Double(maxCount)/5.0*0.6
+        
+        let zoom = CGFloat(dataEntries.count) / 5.0
+        
+                //设置x轴缩放倍数
+        chartView.zoom(scaleX: zoom, scaleY: 1, x: 0, y: 0) //
+        chartView.setScaleEnabled(false)
+                
+
         //设置柱状图数据
         chartView.data = chartData
         
         // 会重新刷新数据 伸缩比会失效
-        //        chartView.fitScreen()
+        // chartView.fitScreen()
         
         //绘制间隔
-        //        chartView.animate(xAxisDuration: 1)
+        //chartView.animate(xAxisDuration: 1)
         
     }
     
@@ -105,13 +125,15 @@ class TestViewController: UIViewController , ChartViewDelegate{
         let xAxis = self.chartView.xAxis
         xAxis.axisLineWidth = 1  //设置X轴线宽
         xAxis.labelPosition = .bottom  //X轴的显示位置，默认是显示在上面的
-        xAxis.drawGridLinesEnabled = true   //不绘制网格线
+        xAxis.drawGridLinesEnabled = false   //不绘制网格线
         //xAxis.l = 4  //设置label间隔，若设置为1，则如果能全部显示，则每个柱形下面都会显示label
         xAxis.labelTextColor = UIColor.brown //label文字颜色
         xAxis.labelCount = 5
         //
         //x轴显示在左侧
         xAxis.labelPosition = .bottom
+        xAxis.granularity = 1
+        xAxis.centerAxisLabelsEnabled = false//文字标签居中
 
     }
     
@@ -121,20 +143,21 @@ class TestViewController: UIViewController , ChartViewDelegate{
         leftAxis.forceLabelsEnabled = false   //不强制绘制制定数量的label
         //leftAxis = false  //是否只显示最大值和最小值
         leftAxis.axisMinimum = 0  //设置Y轴的最小值
-        leftAxis.axisMaximum = 105   //设置Y轴的最大值
+        leftAxis.axisMaximum = 100   //设置Y轴的最大值
 
         leftAxis.drawZeroLineEnabled = true   //从0开始绘制
         leftAxis.inverted = false   //是否将Y轴进行上下翻转
         leftAxis.axisLineWidth = 0.5    //Y轴线宽
         leftAxis.axisLineColor =  UIColor.black  //Y轴颜色
         leftAxis.labelCount = 5
-        leftAxis.forceLabelsEnabled = false
+        leftAxis.forceLabelsEnabled = true
         
         
         //设置Y轴上标签的样式
         leftAxis.labelPosition = .outsideChart   //label位置
         leftAxis.labelTextColor = UIColor.brown   //文字颜色
         leftAxis.labelFont = UIFont.systemFont(ofSize: 10)  //文字字体
+        
         
         //设置Y轴上标签显示数字的格式
         let  leftFormatter = NumberFormatter()  //自定义格式

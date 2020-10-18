@@ -84,9 +84,9 @@ class GroupsBarChartsViewController : UIViewController {
         chartData.groupBars(fromX: Double(0), groupSpace: groupSpace, barSpace: barSpace)
 
         //设置X轴范围
-        chartView.xAxis.axisMinimum = Double(0)
-        chartView.xAxis.axisMaximum = Double(0) + chartData
-          .groupWidth(groupSpace: groupSpace, barSpace: barSpace) * Double(groupCount)
+//        chartView.xAxis.axisMinimum = Double(0)
+//        chartView.xAxis.axisMaximum = Double(0) + chartData
+//          .groupWidth(groupSpace: groupSpace, barSpace: barSpace) * Double(groupCount)
         chartView.xAxis.centerAxisLabelsEnabled = true  //文字标签居中
         chartView.xAxis.granularity = 1
         chartView.xAxis.labelPosition = .bottom
